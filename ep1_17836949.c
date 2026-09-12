@@ -69,7 +69,7 @@ int igual(char* a, char* b) {
     Funções obrigatórias (não altere as assinaturas)
  ---------------------------------------------------------------------- */
 
- // acho que tenho que revisar
+ // acho que ta certo
 void inicializar_planilha(planilha_t *p) {
     // TODO: inicialize primeiraLinha, primeiraColuna, total_celulas e historico.topo
 
@@ -81,23 +81,35 @@ void inicializar_planilha(planilha_t *p) {
     p->historico.topo = NULL;
 }
 
+// acho que ta certo
 celula_t* buscar_celula(planilha_t *p, int lin, int col,
                       celula_t** cel_ant_linha, celula_t** cel_ant_coluna,
                       fileira_t** fil_ant_linha, fileira_t** fil_ant_coluna) {
     /* TODO: localize a celula (lin,col), preencha os quatro antecessores 
         por referencia, retorne NULL se a celula nao existir */
 
-    *cel_ant_linha = NULL;
-    *cel_ant_coluna = NULL;
-    *fil_ant_linha = NULL;
-    *fil_ant_coluna = NULL;
+
+
+    // inicializando os ponteiros de celula e fileira como NULL
+    if (cel_ant_linha != NULL) {
+        *cel_ant_linha = NULL;
+    }
+    if(cel_ant_coluna != NULL){
+        *cel_ant_coluna = NULL;
+    }
+    if(fil_ant_linha != NULL){
+        *fil_ant_linha = NULL;
+    }
+    if(fil_ant_coluna != NULL){
+        *fil_ant_coluna = NULL;
+    }
                     
+    // inicializando a celula de retorno como NULL
     celula_t* celRetorno = NULL;
 
     fileira_t* linAtual = p->primeira_linha;
     fileira_t* linAnterior = NULL;
-    while(linAtual != NULL && linAtual->indice <= lin){ // enquanto o indice da linha for < de lin, nao achamos a linha que esta sendo buscada
-
+    while(linAtual != NULL && linAtual->indice <= lin){ // enquanto o indice da linha for <= de lin, nao achamos a linha que esta sendo buscada
         if(linAtual->indice == lin){ // se o indice da linha atual for igual a lin, chegamos na linha da celula que sera buscada
             celula_t* celAtual = linAtual->primeiro;
             celula_t* celAnterior = NULL;
@@ -105,20 +117,23 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
                 celAnterior = celAtual;
                 celAtual = celAtual->proxima_linha;
             }
-            *cel_ant_linha = celAnterior; // quando celula atual coluna == col, passamos o o anterior como referencia
+            if(cel_ant_linha != NULL){
+                *cel_ant_linha = celAnterior; // quando celula atual coluna == col, passamos o o anterior como referencia
+            }
             break; // saimos do while, pois ja achamos a linha que queremos
         }else{ // se for diferente de lin
             linAnterior = linAtual; 
             linAtual = linAtual->proximo;
         }
     }
-    *fil_ant_linha = linAnterior;
+    if(fil_ant_linha != NULL){
+        *fil_ant_linha = linAnterior;
+    }
 
 
     fileira_t* colAtual = p->primeira_coluna;
     fileira_t* colAnterior = NULL;
-    while(colAtual != NULL && colAtual->indice <= col){ // enquanto o indice da coluna for < de col, nao achamos a coluna que esta sendo buscada
-
+    while(colAtual != NULL && colAtual->indice <= col){ // enquanto o indice da coluna for <= de col, nao achamos a coluna que esta sendo buscada
             if(colAtual->indice == col){ // se o indice da coluna atual for igual a col, chegamos na coluna da celula que sera buscada
                 celula_t* celAtualCol = colAtual->primeiro;
                 celula_t* celAnteriorCol = NULL;
@@ -126,7 +141,9 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
                     celAnteriorCol = celAtualCol;
                     celAtualCol = celAtualCol->proxima_coluna;
                 }
-                *cel_ant_coluna = celAnteriorCol; // quando celula atual coluna == col, passamos o o anterior como referencia
+                if(cel_ant_coluna != NULL){
+                    *cel_ant_coluna = celAnteriorCol; // quando celula atual coluna == col, passamos o o anterior como referencia
+                }
                 celRetorno = celAtualCol; // passamos a celula atual como retorno
                 break; // saimos do while, pois ja achamos a coluna que queremos
             }else{ // se for diferente de lin
@@ -134,7 +151,9 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
                 colAtual = colAtual->proximo;
             }
         }
-    *fil_ant_coluna = colAnterior;
+    if (fil_ant_coluna != NULL) {
+        *fil_ant_coluna = colAnterior;
+    }
     
 
     if(celRetorno != NULL && celRetorno->linha == lin && celRetorno->coluna == col){ // se a celula atual for diferente de NULL e a linha e coluna forem iguais, retornamos a celula atual
@@ -144,9 +163,16 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
     }
 }
 
+// acho que ta certo
 int obter_valor(planilha_t *p, int linha, int coluna) {
     // TODO: use buscarCelula; retorne 0 se a celula nao existir
-    return 0;
+
+    celula_t* celula = buscar_celula(p, linha, coluna, NULL, NULL, NULL, NULL);
+    if(celula == NULL){
+        return 0;
+    }else{
+        return celula->valor;
+    }
 }
 
 int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
@@ -160,17 +186,15 @@ int contar_nao_nulas(planilha_t* p) {
     // TODO: retorne a quantidade de celulas nao nulas
 
 
-
     int naoNulas = 0;
     fileira_t* proxLin = p->primeira_linha;  // aponta para a primeira fileira (ou NULL se a planilha estiver vazia)
 
     while(proxLin != NULL){
-        naoNulas++; // adiciona na quantidade de celulas não nulas
         if(proxLin->primeiro != NULL){
             celula_t* proxCel = proxLin->primeiro; // aponta para a primeira célula da fileira
             while(proxCel != NULL){ // se a primeira celula não for nula, pode passar pra proxima celula
                 naoNulas++; // adiciona na quantidade de celulas não nulas
-                proxCel = proxCel->proxima_coluna; // passa pra proxima celula da mesma linha
+                proxCel = proxCel->proxima_linha; // passa pra proxima celula da mesma linha
             }
         }
         proxLin = proxLin->proximo; // passa pra proxima linha quando as celulas da linha atual acabarem
@@ -319,8 +343,163 @@ int main(int argc, char *argv[]) {
 
 
 
-//minha main de testes
-int main(){
-    printf("Testando\n");
+
+
+
+
+
+
+
+#pragma region testes
+
+
+
+/* ----------------------------------------------------------------------
+   Funcoes auxiliares SO para montar a planilha de teste manualmente
+   (nao fazem parte do EP - servem so para o harness poder testar
+   buscar_celula/obter_valor/contar_nao_nulas sem depender de definir_celula,
+   que ainda nao esta pronta)
+ ---------------------------------------------------------------------- */
+ 
+celula_t* nova_celula(int lin, int col, int valor) {
+    celula_t* c = malloc(sizeof(celula_t));
+    c->linha = lin;
+    c->coluna = col;
+    c->valor = valor;
+    c->proxima_linha = NULL;
+    c->proxima_coluna = NULL;
+    return c;
+}
+ 
+fileira_t* nova_fileira(int indice, celula_t* primeiro) {
+    fileira_t* f = malloc(sizeof(fileira_t));
+    f->indice = indice;
+    f->primeiro = primeiro;
+    f->proximo = NULL;
+    return f;
+}
+ 
+/* Monta a planilha do exemplo do enunciado (Figura 1, Secao 3.7):
+   (0,1)=12, (2,0)=5, (1,1)=10, (1,3)=7 */
+void montar_planilha_exemplo(planilha_t* p) {
+    inicializar_planilha(p);
+    p->total_celulas = 4;
+ 
+    celula_t* c01 = nova_celula(0, 1, 12);
+    celula_t* c10 = nova_celula(1, 1, 10);
+    celula_t* c13 = nova_celula(1, 3, 7);
+    celula_t* c20 = nova_celula(2, 0, 5);
+ 
+    // Listas de LINHA (ordenadas por coluna crescente, ligadas por proxima_linha)
+    c01->proxima_linha = NULL;          // linha 0: so c01
+    c10->proxima_linha = c13;           // linha 1: c10 (col1) -> c13 (col3)
+    c13->proxima_linha = NULL;
+    c20->proxima_linha = NULL;          // linha 2: so c20
+ 
+    // Listas de COLUNA (ordenadas por linha crescente, ligadas por proxima_coluna)
+    c20->proxima_coluna = NULL;         // coluna 0: so c20
+    c01->proxima_coluna = c10;          // coluna 1: c01 (lin0) -> c10 (lin1)
+    c10->proxima_coluna = NULL;
+    c13->proxima_coluna = NULL;         // coluna 3: so c13
+ 
+    // Fileiras de LINHA
+    fileira_t* f_lin0 = nova_fileira(0, c01);
+    fileira_t* f_lin1 = nova_fileira(1, c10);
+    fileira_t* f_lin2 = nova_fileira(2, c20);
+    f_lin0->proximo = f_lin1;
+    f_lin1->proximo = f_lin2;
+    f_lin2->proximo = NULL;
+    p->primeira_linha = f_lin0;
+ 
+    // Fileiras de COLUNA
+    fileira_t* f_col0 = nova_fileira(0, c20);
+    fileira_t* f_col1 = nova_fileira(1, c01);
+    fileira_t* f_col3 = nova_fileira(3, c13);
+    f_col0->proximo = f_col1;
+    f_col1->proximo = f_col3;
+    f_col3->proximo = NULL;
+    p->primeira_coluna = f_col0;
+}
+ 
+/* ----------------------------------------------------------------------
+   Testes
+ ---------------------------------------------------------------------- */
+ 
+int testes_ok = 0;
+int testes_total = 0;
+ 
+void checar(const char* nome, int esperado, int obtido) {
+    testes_total++;
+    if (esperado == obtido) {
+        testes_ok++;
+        printf("[OK]     %s (esperado=%d, obtido=%d)\n", nome, esperado, obtido);
+    } else {
+        printf("[FALHOU] %s (esperado=%d, obtido=%d)\n", nome, esperado, obtido);
+    }
+}
+ 
+void checar_ptr(const char* nome, void* esperado, void* obtido) {
+    testes_total++;
+    if (esperado == obtido) {
+        testes_ok++;
+        printf("[OK]     %s (ponteiros batem)\n", nome);
+    } else {
+        printf("[FALHOU] %s (esperado=%p, obtido=%p)\n", nome, esperado, obtido);
+    }
+}
+ 
+int main() {
+    planilha_t p;
+    montar_planilha_exemplo(&p);
+ 
+    printf("=== Testando obter_valor ===\n");
+    checar("obter_valor(0,1) deve ser 12", 12, obter_valor(&p, 0, 1));
+    checar("obter_valor(1,1) deve ser 10", 10, obter_valor(&p, 1, 1));
+    checar("obter_valor(1,3) deve ser 7",  7, obter_valor(&p, 1, 3));
+    checar("obter_valor(2,0) deve ser 5",  5, obter_valor(&p, 2, 0));
+    checar("obter_valor(9,9) [nao existe] deve ser 0", 0, obter_valor(&p, 9, 9));
+    checar("obter_valor(1,2) [buraco no meio] deve ser 0", 0, obter_valor(&p, 1, 2));
+    checar("obter_valor(0,0) [linha existe, celula nao] deve ser 0", 0, obter_valor(&p, 0, 0));
+ 
+    printf("\n=== Testando contar_nao_nulas ===\n");
+    checar("contar_nao_nulas deve ser 4", 4, contar_nao_nulas(&p));
+ 
+    printf("\n=== Testando buscar_celula (existente) ===\n");
+    {
+        celula_t *cel_ant_lin, *cel_ant_col;
+        fileira_t *fil_ant_lin, *fil_ant_col;
+        celula_t* r = buscar_celula(&p, 1, 3, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
+        checar("buscar_celula(1,3) deve retornar nao-NULL", 1, (r != NULL));
+        if (r) {
+            checar("celula (1,3) tem valor 7", 7, r->valor);
+        }
+        checar("cel_ant_linha(1,3) deve ter valor 10", 10, (cel_ant_lin ? cel_ant_lin->valor : -1));
+        checar("fil_ant_linha(1,3) deve ter indice 0", 0, (fil_ant_lin ? fil_ant_lin->indice : -1));
+        checar("fil_ant_coluna(1,3) deve ter indice 1", 1, (fil_ant_col ? fil_ant_col->indice : -1));
+        checar_ptr("cel_ant_coluna(1,3) deve ser NULL", NULL, cel_ant_col);
+    }
+ 
+    printf("\n=== Testando buscar_celula (linha existe, celula nao) ===\n");
+    {
+        celula_t *cel_ant_lin, *cel_ant_col;
+        fileira_t *fil_ant_lin, *fil_ant_col;
+        celula_t* r = buscar_celula(&p, 1, 2, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
+        checar_ptr("buscar_celula(1,2) deve retornar NULL", NULL, r);
+        checar("cel_ant_linha(1,2) deve ter valor 10 (celula col=1)", 10, (cel_ant_lin ? cel_ant_lin->valor : -1));
+    }
+ 
+    printf("\n=== Testando buscar_celula (linha nao existe) ===\n");
+    {
+        celula_t *cel_ant_lin, *cel_ant_col;
+        fileira_t *fil_ant_lin, *fil_ant_col;
+        celula_t* r = buscar_celula(&p, 5, 5, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
+        checar_ptr("buscar_celula(5,5) deve retornar NULL", NULL, r);
+        checar("fil_ant_linha(5,5) deve ter indice 2", 2, (fil_ant_lin ? fil_ant_lin->indice : -1));
+        checar("fil_ant_coluna(5,5) deve ter indice 3", 3, (fil_ant_col ? fil_ant_col->indice : -1));
+    }
+ 
+    printf("\n=== Resultado final: %d/%d testes passaram ===\n", testes_ok, testes_total);
+ 
     return 0;
 }
+ 
