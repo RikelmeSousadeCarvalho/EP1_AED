@@ -207,23 +207,29 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
        empilhando em p->historico quando houver alteracao efetiva.
        Retorna true se houve alteracao, false se foi operacao nula. */
 
-    /*
+    
+    fileira_t* linAtual = p->primeira_linha;
+    fileira_t* colAtual = p->primeira_coluna;
+    celula_t* celBusca = buscar_celula(p, lin, col, NULL, NULL, NULL, NULL); // celula buscada na posicao lin col
+
+
     //se a célula existe: 
-    if(){
+    if(celBusca != NULL){
         if(valor != 0){ // se a célula existe e se o valor é diferente de 0:
-            
+            celBusca->valor = valor; // apenas muda o valor dela
+            //FALTA EMPILHAR EM P->HISTORICO
+            return true;
         }else{  // se a célula existe e se o valor é igual a 0: 
             
         }
     }else{ //se a célula não existe: 
         if(valor != 0){ // se a célula não existe e se o valor é diferente de 0:
-
+            celula_t* novaCel = NULL;
         }else{  // se a célula existe não e se o valor é igual a 0: 
-
             // nenhuma operação ocorre (NOP)
         }
     }
-    */
+    
 
     return false;
 }
@@ -249,6 +255,23 @@ void exibir_planilha(planilha_t *p) {
     /* TODO: imprima "linha coluna valor" por linha, em ordem crescente
        de linha e, dentro de cada linha, de coluna. Se vazia, imprima
        "PLANILHA VAZIA" */
+
+
+        int naoNulas = contar_nao_nulas(p);
+        if(naoNulas == 0){
+            printf("PLANILHA VAZIA");
+        }else{
+            fileira_t* linAtual = p->primeira_linha;
+
+            while(linAtual != NULL){
+                celula_t* proxCel = linAtual->primeiro;
+                while(proxCel != NULL){
+                    printf("%d %d %d", linAtual->indice, proxCel->coluna, proxCel->valor);
+                    proxCel = proxCel->proxima_linha;
+                }
+                linAtual = linAtual->proximo;
+            }
+        }
 }
 
 void exibir_historico(planilha_t* p) {
