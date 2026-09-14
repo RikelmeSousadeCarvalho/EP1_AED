@@ -208,7 +208,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
        Retorna true se houve alteracao, false se foi operacao nula. */
 
 
-       //O QUE FALTA: fazer toda a parte do historico
+       //O QUE FALTA: fazer toda a parte do historico, fazer a parte das colunas do primeiro if, revisar todo o primeiro else, fazer o retorno certo
 
     
     fileira_t* linAtual = p->primeira_linha;
@@ -256,36 +256,47 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
         }else{  // se a célula existe e se o valor é igual a 0: 
 
             //para as linhas
-            if(celBusca->proximo == NULL && cel_ant_linha == NULL){ // a celula é a unica da linha
+            if(celBusca->proxima_linha == NULL && cel_ant_linha == NULL){ // a celula é a unica da linha
 
                 if(fil_ant_linha == NULL){ // ou a fileira é a primeira ou é a única
 
+                    fileira_t* primeiraLinha = p->primeira_linha;
                     if(p->primeira_linha->proximo == NULL){ // a fileira é unica
-
-
-
+                        p->primeira_linha = NULL;
                     }else{ // a fileira é a primeira, mas não é a unica
-
+                        p->primeira_linha = p->primeira_linha->proximo;
                     }
 
+                    free(primeiraLinha);
+
                 }else{ // se a fileira anterior nao é nula
-
-                    if(fil_ant_linha->proximo->proximo == NULL){ // a fileira atual é a ultima
-
+                    fileira_t* filAtual = fil_ant_linha->proximo;
+                    if(filAtual->proximo == NULL){ // a fileira atual é a ultima
+                        fil_ant_linha->proximo = NULL;
+                        free(filAtual);
                     }else{ // a fileira atual esta no meio de duas
-
+                        fil_ant_linha->proximo = filAtual->proximo;
+                        free(filAtual);
                     }
 
                 }
 
             }else{ // a celula nao é unica na linha
 
-                if(cel_ant_linha == NULL){ // é a primeira
+                if(cel_ant_linha == NULL){ // celBusca é a primeira celula
 
-                }else if(){ // ela ta no meio
+                    if(fil_ant_linha == NULL){ // se for a primeira linha
+                        p->primeira_linha->primeiro = celBusca->proxima_linha;
+                    }else{
+                        fil_ant_linha->proximo->primeiro = celBusca->proxima_linha;
+                    }
+                    celBusca->proxima_linha = NULL; //acho que nem preciso fazer isso 
 
-                }else{ // ela é a ultima
-
+                }else if(cel_ant_linha != NULL && celBusca->proxima_linha != NULL){ // ela ta no meio
+                    cel_ant_linha->proxima_linha = celBusca->proxima_linha;
+                    celBusca->proxima_linha = NULL; //acho que nem preciso fazer isso 
+                }else{ // ela é a ultima   
+                    cel_ant_linha->proxima_linha = NULL; // a anterior vira a nova ultima, apontando pra NULL
                 }
 
             }
@@ -296,8 +307,8 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
 
 
-            // depois de tudo, limpo a celula
-            free(celBusca);
+            p->total_celulas = p->total_celulas - 1;
+            free(celBusca); // depois de tudo, limpo a celula
 
         }
     }else{ //se a célula não existe: 
