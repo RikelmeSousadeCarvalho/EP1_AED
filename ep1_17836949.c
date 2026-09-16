@@ -181,10 +181,11 @@ int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini,
 }
 
 
-// acho que ta pronto
+// acho que ta pronto - REVISAR
 int contar_nao_nulas(planilha_t* p) {
     // TODO: retorne a quantidade de celulas nao nulas
 
+    // estou percorrendo toda a lista, mas a propria planilha possui o campo p->total_celulas. Sera que nao vale a pena, por eficiencia, retornar diretamente esse campo?
 
     int naoNulas = 0;
     fileira_t* proxLin = p->primeira_linha;  // aponta para a primeira fileira (ou NULL se a planilha estiver vazia)
@@ -211,20 +212,8 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
        //O QUE FALTA: fazer toda a parte do historico, fazer a parte das colunas do primeiro if, revisar todo o primeiro else, fazer o retorno certo
 
     
-    fileira_t* linAtual = p->primeira_linha;
-    /*
-        while(linAtual->indice <= lin){
-        linAtual = linAtual->proximo;
-    }
-    */
-
-
-    fileira_t* colAtual = p->primeira_coluna;
-    /*
-        while(colAtual->indice <= col){
-        colAtual = colAtual->proximo;
-    }
-    */
+    fileira_t* linAtual = p->primeira_linha; //APAGAR
+    fileira_t* colAtual = p->primeira_coluna; //APAGAR
 
 
     celula_t* cel_ant_linha = NULL;
@@ -235,17 +224,6 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     celula_t* celBusca = buscar_celula(p, lin, col, &cel_ant_linha, &cel_ant_coluna, &fil_ant_linha, &fil_ant_coluna); // celula buscada na posicao lin col
 
 
-    /* TA ERRADO, TENHO QUE DAR O RETURN NO FIM DE CADA CASO
-
-
-        if(celBusca->valor == valor){
-        return false;
-    }else{
-        return true;
-    }
-    */
-
-
 
     if(celBusca != NULL){ //se a célula existe: 
         if(valor != 0){ // se a célula existe e se o valor é diferente de 0:
@@ -254,6 +232,8 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
             //FALTA EMPILHAR EM P->HISTORICO
             
         }else{  // se a célula existe e se o valor é igual a 0: 
+
+            //equivale a remover uma celula
 
             //para as linhas
             if(celBusca->proxima_linha == NULL && cel_ant_linha == NULL){ // a celula é a unica da linha
@@ -304,7 +284,50 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
 
             //para as colunas
+            if(celBusca->proxima_coluna == NULL && cel_ant_coluna == NULL){ // a celula é a unica da coluna
 
+                if(fil_ant_coluna == NULL){ // ou a fileira é a primeira ou é a única
+
+                    fileira_t* primeiraColuna = p->primeira_coluna;
+                    if(p->primeira_coluna->proximo == NULL){ // a fileira é unica
+                        p->primeira_coluna = NULL;
+                    }else{ // a fileira é a primeira, mas não é a unica
+                        p->primeira_coluna = p->primeira_coluna->proximo;
+                    }
+
+                    free(primeiraColuna);
+
+                }else{ // se a fileira anterior nao é nula
+                    fileira_t* filAtual = fil_ant_coluna->proximo;
+                    if(filAtual->proximo == NULL){ // a fileira atual é a ultima
+                        fil_ant_coluna->proximo = NULL;
+                        free(filAtual);
+                    }else{ // a fileira atual esta no meio de duas
+                        fil_ant_coluna->proximo = filAtual->proximo;
+                        free(filAtual);
+                    }
+
+                }
+
+            }else{ // a celula nao é unica na coluna
+
+                if(cel_ant_coluna == NULL){ // celBusca é a primeira celula
+
+                    if(fil_ant_coluna == NULL){ // se for a primeira coluna
+                        p->primeira_coluna->primeiro = celBusca->proxima_coluna;
+                    }else{
+                        fil_ant_coluna->proximo->primeiro = celBusca->proxima_coluna;
+                    }
+                    celBusca->proxima_coluna = NULL; //acho que nem preciso fazer isso 
+
+                }else if(cel_ant_coluna != NULL && celBusca->proxima_coluna != NULL){ // ela ta no meio
+                    cel_ant_coluna->proxima_coluna = celBusca->proxima_coluna;
+                    celBusca->proxima_coluna = NULL; //acho que nem preciso fazer isso 
+                }else{ // ela é a ultima   
+                    cel_ant_coluna->proxima_coluna = NULL; // a anterior vira a nova ultima, apontando pra NULL
+                }
+
+            }
 
 
             p->total_celulas = p->total_celulas - 1;
@@ -314,13 +337,75 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     }else{ //se a célula não existe: 
         if(valor != 0){ // se a célula não existe e se o valor é diferente de 0:
 
-            celula_t* novaCel = NULL;
-            /*
-            while(linAtual->indice <= lin){
-                linAtual = linAtual->proximo;
+            celula_t* novaCel = malloc(sizeof(celula_t));
+            novaCel->valor = valor;
+
+
+            //para as linhas
+
+            if(fil_ant_linha == NULL){ // se a fileira nn tem antecessor
+                //pode ser a primeira, pode ser a unica ou a planilha pode estar vazia
+
+                if(p->total_celulas == 0){ // planilha vazia
+                    fileira_t* novaLinha = malloc(sizeof(fileira_t));
+                    p->primeira_linha = novaLinha;
+                    novaLinha->primeiro = novaCel;
+                    novaLinha->indice = lin;
+                    novaLinha->proximo = NULL;
+                    novaCel->linha = lin;
+                    novaCel->coluna = col;
+                    novaCel->proxima_linha = NULL;
+                    novaCel->proxima_coluna = NULL;
+                }else{// pode ser a primeira, pode ser a unica - vai funcionar da mesma forma
+
+                    fileira_t* primeiraLinha = p->primeira_linha;
+
+                    if(cel_ant_linha != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou final
+                        novaCel->proxima_linha = cel_ant_linha->proxima_linha;
+                        cel_ant_linha->proxima_linha = novaCel;
+
+                    }else{ // se a fileira da linha existir e precisar colocar na primeira posição 
+                        novaCel->proxima_linha = primeiraLinha->primeiro;
+                        primeiraLinha->primeiro = novaCel;
+                    }
+
+                }
+
+            }else{ // se a fileira tem antecessor
+
+                if(fil_ant_linha->proximo != NULL && fil_ant_linha->proximo->indice == lin){ // se o indice de linha passado é igual ao indice da fileira seguinte ao antecessor(a atual), a linha existe. O != NULL é pra garantir que existe fil_ant_linha->proximo
+
+                    if(cel_ant_linha != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou no fim
+                        novaCel->proxima_linha = cel_ant_linha->proxima_linha;
+                        cel_ant_linha->proxima_linha = novaCel;
+
+                    }else{ // se a fileira da linha existir e precisar colocar na primeira posição (ou seja, nao tem anterior)
+                        novaCel->proxima_linha = fil_ant_linha->proximo->primeiro; // fileira atual
+                        fil_ant_linha->proximo->primeiro = novaCel;
+
+                    }
+
+                }else{ // nao existe e precisamos criar a fileira 
+                    fileira_t* novaLinha = malloc(sizeof(fileira_t));
+                    novaLinha->proximo = fil_ant_linha->proximo;
+                    novaLinha->primeiro = novaCel;
+                    novaLinha->indice = lin;
+                    fil_ant_linha->proximo = novaLinha;
+                    novaCel->linha = lin;
+                    novaCel->coluna = col;
+                    novaCel->proxima_linha = NULL;
+                    novaCel->proxima_coluna = NULL;
+                }
             }
 
-            */
+            // ate aqui é parte do dia 15/09 - as linhas tao corretas
+
+
+
+
+
+
+
 
             if(linAtual->primeiro != NULL){ // se a fileira das linhas existe, ou seja, existe uma primeira celula
 
@@ -341,7 +426,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
             } else{ // se a fileira das linhas não existe
 
-                fileira_t* novaLinha;
+                fileira_t* novaLinha = malloc(sizeof(fileira_t*));
 
                 if(fil_ant_linha == NULL){ // se nao existe fileira de linha anterior
 
@@ -363,12 +448,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
             }
 
 
-            /*
-            while(colAtual->indice <= col){
-                colAtual = colAtual->proximo;
-            }
-            */
-
+            //parte das colunas
 
             if(colAtual->primeiro != NULL){ // se a fileira das colunas existe, ou seja, existe uma primeira celula
 
@@ -389,7 +469,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
             } else{ // se a fileira das colunas nao existe
 
-                fileira_t* novaColuna;
+                fileira_t* novaColuna = malloc(sizeof(fileira_t*));
 
                 if(fil_ant_coluna == NULL){ // se nao existe fileira de coluna anterior
 
@@ -409,6 +489,9 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                 }
 
             }
+
+
+            p->total_celulas = p->total_celulas + 1; // criamos uma celula, entao aumentamos o total_celulas
 
         }else{  // se a célula existe não e se o valor é igual a 0: 
             // nenhuma operação ocorre (NOP)
