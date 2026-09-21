@@ -177,7 +177,40 @@ int obter_valor(planilha_t *p, int linha, int coluna) {
 
 int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
     // TODO: some os valores das celulas nao nulas no intervalo dado
-    return 0;
+
+    // casos:
+    // linha_ini == linha_fim -> estamos percorrendo uma só linha
+    // linha_inin != linha_fim -> estamos percorrendo linhas distintas
+
+    int soma = 0;
+
+    fileira_t* linAtual = p->primeira_linha;
+    while(linAtual->proximo->indice != linha_ini){
+        linAtual = linAtual->proximo;
+    }
+
+    if(linha_ini == linha_fim){ 
+        if(coluna_ini == coluna_fim){ // estamos somando uma unica celula
+            soma = linAtual->primeiro->valor;
+        }else{ // somando celulas na mesma linha
+            celula_t* cel = linAtual->primeiro;
+            while(cel->coluna != coluna_ini){
+                cel = cel->proxima_linha;
+            }
+            while(coluna_ini != coluna_fim){
+                soma += cel->valor;
+                coluna_ini++;
+            }   
+        }
+    }else{ // temos que percorrer mais linhas
+        celula_t* cel = linAtual->primeiro;
+        while(cel->coluna != coluna_ini){
+            cel = cel->proxima_linha;
+        }
+
+    }
+
+    return soma;
 }
 
 
@@ -186,6 +219,7 @@ int contar_nao_nulas(planilha_t* p) {
     return p->total_celulas;
 }
 
+//acho que ta pronto
 bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     /* TODO: implemente os 4 casos (atualizar/criar/remover/nulo),
        empilhando em p->historico quando houver alteracao efetiva.
@@ -518,6 +552,7 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
 }
 
+//acho que ta certo
 bool remover_celula(planilha_t* p, int lin, int col) {
     // TODO: remova a celula (lin,col)
 
