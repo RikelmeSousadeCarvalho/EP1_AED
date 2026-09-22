@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <limits.h> // usado pra contas de INT_MAX
 
 /* ----------------------------------------------------------------------
   Estruturas de dados (não altere nomes e ordem de campos)
@@ -178,44 +179,29 @@ int obter_valor(planilha_t *p, int linha, int coluna) {
 int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
     // TODO: some os valores das celulas nao nulas no intervalo dado
 
-    // casos:
-    // linha_ini == linha_fim -> estamos percorrendo uma só linha
-    // linha_inin != linha_fim -> estamos percorrendo linhas distintas
 
     int soma = 0;
+    fileira_t* linha = p->primeira_linha;
 
-    fileira_t* linAtual = p->primeira_linha;
-    while(linAtual->proximo->indice != linha_ini){
-        linAtual = linAtual->proximo;
-    }
-
-    if(linha_ini == linha_fim){ 
-        if(coluna_ini == coluna_fim){ // estamos somando uma unica celula
-            soma = linAtual->primeiro->valor;
-        }else{ // somando celulas na mesma linha
-            celula_t* cel = linAtual->primeiro;
-            while(cel->coluna != coluna_ini){
+    while(linha != NULL){
+        if(linha->indice >= linha_ini && linha->indice <= linha_fim){ // se a linha atual esta dentro do intervalo das linhas
+            celula_t* cel = linha->primeiro;
+            while(cel != NULL){
+                if(cel->coluna >= coluna_ini && cel->coluna <= coluna_fim){
+                    soma += cel->valor;
+                }
                 cel = cel->proxima_linha;
             }
-            while(coluna_ini != coluna_fim){
-                soma += cel->valor;
-                coluna_ini++;
-            }   
         }
-    }else{ // temos que percorrer mais linhas
-        celula_t* cel = linAtual->primeiro;
-        while(cel->coluna != coluna_ini){
-            cel = cel->proxima_linha;
-        }
-
+        linha = linha->proximo;
     }
-
     return soma;
 }
 
 
 // acho que ta pronto
 int contar_nao_nulas(planilha_t* p) {
+    // TODO: retorne a quantidade de celulas nao nulas
     return p->total_celulas;
 }
 
@@ -224,9 +210,6 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     /* TODO: implemente os 4 casos (atualizar/criar/remover/nulo),
        empilhando em p->historico quando houver alteracao efetiva.
        Retorna true se houve alteracao, false se foi operacao nula. */
-
-
-       //O QUE FALTA: fazer toda a parte do historico e fazer o retorno certo
 
     
     fileira_t* linAtual = p->primeira_linha; //APAGAR
@@ -566,6 +549,45 @@ bool remover_celula(planilha_t* p, int lin, int col) {
 bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     /* TODO: transpoe uma matriz quadrada que está localizada entre
        as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */
+
+
+       //O que falta: ajustar a logica para usar o definir celula - ele vai empilhar todas as mudanças, ai tenho que desempilhar e empilhar uma só manualmente
+
+    if(lin > INT_MAX - tamanho || col > INT_MAX - tamanho){ // a soma dos dois ints estourou o limite(INT_MAX) 
+        return false;
+    }
+
+    int alteracao = 0;
+    for(int l = 0; l < tamanho; l++){
+        for(int c = 0; c < tamanho; c++){
+            if(l < c){
+                int orig = obter_valor(p, lin + l, col + c);
+                int transp = obter_valor(p, lin + c, col + l);
+                if(orig != transp){
+                    alteracao++;
+                    int temp = orig;
+                    orig = transp;
+                    transp = temp;
+                }
+            }
+        }
+    }
+    
+    if(alteracao > 0){
+        operacao_t novaOp;
+        novaOp.transposicao = true;
+        novaOp.linha = lin;
+        novaOp.coluna = col;
+        novaOp.tamanho = tamanho;
+
+        elo_pilha_t* novoElo = malloc(sizeof(elo_pilha_t));
+        novoElo->op = novaOp;
+        novoElo->proximo = p->historico.topo;
+        p->historico.topo = novoElo;
+
+        return true;
+    }
+
     return false;
 }
 
@@ -575,6 +597,8 @@ bool desfazer(planilha_t* p) {
     return false;
 }
 
+
+//acho que ta pronto
 void exibir_planilha(planilha_t *p) {
     /* TODO: imprima "linha coluna valor" por linha, em ordem crescente
        de linha e, dentro de cada linha, de coluna. Se vazia, imprima
@@ -583,14 +607,14 @@ void exibir_planilha(planilha_t *p) {
 
         int naoNulas = contar_nao_nulas(p);
         if(naoNulas == 0){
-            printf("PLANILHA VAZIA");
+            printf("PLANILHA VAZIA\n");
         }else{
             fileira_t* linAtual = p->primeira_linha;
 
             while(linAtual != NULL){
                 celula_t* proxCel = linAtual->primeiro;
                 while(proxCel != NULL){
-                    printf("%d %d %d", linAtual->indice, proxCel->coluna, proxCel->valor);
+                    printf("%d %d %d\n", linAtual->indice, proxCel->coluna, proxCel->valor);
                     proxCel = proxCel->proxima_linha;
                 }
                 linAtual = linAtual->proximo;
