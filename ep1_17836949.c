@@ -175,6 +175,7 @@ int obter_valor(planilha_t *p, int linha, int coluna) {
     }
 }
 
+//acho que ta pronto
 int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
     // TODO: some os valores das celulas nao nulas no intervalo dado
 
@@ -209,10 +210,6 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     /* TODO: implemente os 4 casos (atualizar/criar/remover/nulo),
        empilhando em p->historico quando houver alteracao efetiva.
        Retorna true se houve alteracao, false se foi operacao nula. */
-
-    
-    fileira_t* linAtual = p->primeira_linha; //APAGAR
-    fileira_t* colAtual = p->primeira_coluna; //APAGAR
 
 
     celula_t* cel_ant_linha = NULL;
@@ -397,11 +394,15 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     if(cel_ant_linha != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou final
                         novaCel->proxima_linha = cel_ant_linha->proxima_linha;
                         cel_ant_linha->proxima_linha = novaCel;
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
 
                     }else{ // se a fileira da linha existir e precisar colocar na primeira posição 
                         if(p->primeira_linha->indice == lin){ // se o indice da primeira linha for igual a lin
                             novaCel->proxima_linha = primeiraLinha->primeiro;
                             primeiraLinha->primeiro = novaCel;
+                            novaCel->linha = lin;
+                            novaCel->coluna = col;
                         }else{
                             fileira_t* novaLinha = malloc(sizeof(fileira_t));
                             novaCel->proxima_linha = NULL;
@@ -423,11 +424,14 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     if(cel_ant_linha != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou no fim
                         novaCel->proxima_linha = cel_ant_linha->proxima_linha;
                         cel_ant_linha->proxima_linha = novaCel;
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
 
                     }else{ // se a fileira da linha existir e precisar colocar na primeira posição (ou seja, nao tem anterior)
                         novaCel->proxima_linha = fil_ant_linha->proximo->primeiro; // fileira atual
                         fil_ant_linha->proximo->primeiro = novaCel;
-
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
                     }
 
                 }else{ // nao existe e precisamos criar a fileira 
@@ -464,11 +468,15 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     if(cel_ant_coluna != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou final
                         novaCel->proxima_coluna = cel_ant_coluna->proxima_coluna;
                         cel_ant_coluna->proxima_coluna = novaCel;
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
 
                     }else{ // se a fileira da coluna existir e precisar colocar na primeira posição 
                         if(p->primeira_coluna->indice == col){
                             novaCel->proxima_coluna = primeiraColuna->primeiro;
                             primeiraColuna->primeiro = novaCel;
+                            novaCel->linha = lin;
+                            novaCel->coluna = col;
                         }else{
                             fileira_t* novaColuna = malloc(sizeof(fileira_t));
                             novaCel->proxima_coluna = NULL;
@@ -490,11 +498,14 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
                     if(cel_ant_coluna != NULL){ // se a fileira existir e preciso colocar uma celula no meio ou no fim
                         novaCel->proxima_coluna = cel_ant_coluna->proxima_coluna;
                         cel_ant_coluna->proxima_coluna = novaCel;
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
 
                     }else{ // se a fileira da linha existir e precisar colocar na primeira posição (ou seja, nao tem anterior)
                         novaCel->proxima_coluna = fil_ant_coluna->proximo->primeiro; // fileira atual
                         fil_ant_coluna->proximo->primeiro = novaCel;
-
+                        novaCel->linha = lin;
+                        novaCel->coluna = col;
                     }
 
                 }else{ // nao existe e precisamos criar a fileira 
@@ -545,6 +556,7 @@ bool remover_celula(planilha_t* p, int lin, int col) {
     return false;
 }
 
+// acho que ta pronto
 bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     /* TODO: transpoe uma matriz quadrada que está localizada entre
        as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */
@@ -604,6 +616,8 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     return false;
 }
 
+
+//acho que ta pronto
 bool desfazer(planilha_t* p) {
     /* TODO: desempilhe de p->historico e restaure o valor anterior.
        Retorna false se o historico estiver vazio, true caso contrario. */
@@ -670,20 +684,72 @@ void exibir_planilha(planilha_t *p) {
         }
 }
 
+//acho que ta pronto
 void exibir_historico(planilha_t* p) {
     /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
        para a base. Se vazio, imprima "HISTORICO VAZIO" */
+
+       elo_pilha_t* topo = p->historico.topo;
+       if(topo == NULL){
+        printf("HISTORICO VAZIO\n");
+       }
+
+       while(topo != NULL){
+            if(topo->op.transposicao == false){
+                printf("%d %d %d\n", topo->op.linha, topo->op.coluna, topo->op.valor_anterior);
+            }else{
+                printf("T %d %d %d\n", topo->op.linha, topo->op.coluna, topo->op.tamanho);
+            }
+            topo = topo->proximo;
+       }
 }
 
 void liberar_tudo(planilha_t* p) {
     // TODO: libere toda a memória alocada por fileira, celula, e pilha.
+
+    //liberando as linhas
+    fileira_t* linhas = p->primeira_linha;
+    while(linhas != NULL){
+        
+        celula_t* celula = linhas->primeiro;
+        while(celula != NULL){
+            celula_t* cel = celula;
+            celula = celula->proxima_linha;
+            free(cel);
+        }
+
+        fileira_t* lin = linhas;
+        linhas = linhas->proximo;
+        free(lin);
+    }
+
+
+    //liberando as colunas
+    fileira_t* colunas = p->primeira_coluna;
+    while(colunas != NULL){
+        fileira_t* col = colunas;
+        colunas = colunas->proximo;
+        free(col);
+    }
+
+
+    // liberando toda a pilha
+    elo_pilha_t* topo = p->historico.topo;
+    while(topo != NULL){
+        elo_pilha_t* aux = topo;
+        topo = topo->proximo;
+        free(aux);
+    }
+
+    inicializar_planilha(p); // reiniciando todos os campos para representar uma planilha vazia
+
 }
 
 /* ---------------------------------------------------------------------- *
     Main para leitura de arquivos (já pronta no caso, pode ser que na versão final deixemos sem)
  ---------------------------------------------------------------------- */
 
- /*
+
 int main(int argc, char *argv[]) {
     if (argc < 3) {
         printf("Uso do comando eh: %s arquivo_entrada.txt arquivo_saida.txt\n", argv[0]);
@@ -758,167 +824,4 @@ int main(int argc, char *argv[]) {
     liberar_tudo(&p);
     return 0;
 }
-*/
 
-
-
-
-
-
-
-
-
-
-#pragma region testes
-
-
-
-/* ----------------------------------------------------------------------
-   Funcoes auxiliares SO para montar a planilha de teste manualmente
-   (nao fazem parte do EP - servem so para o harness poder testar
-   buscar_celula/obter_valor/contar_nao_nulas sem depender de definir_celula,
-   que ainda nao esta pronta)
- ---------------------------------------------------------------------- */
- 
-celula_t* nova_celula(int lin, int col, int valor) {
-    celula_t* c = malloc(sizeof(celula_t));
-    c->linha = lin;
-    c->coluna = col;
-    c->valor = valor;
-    c->proxima_linha = NULL;
-    c->proxima_coluna = NULL;
-    return c;
-}
- 
-fileira_t* nova_fileira(int indice, celula_t* primeiro) {
-    fileira_t* f = malloc(sizeof(fileira_t));
-    f->indice = indice;
-    f->primeiro = primeiro;
-    f->proximo = NULL;
-    return f;
-}
- 
-/* Monta a planilha do exemplo do enunciado (Figura 1, Secao 3.7):
-   (0,1)=12, (2,0)=5, (1,1)=10, (1,3)=7 */
-void montar_planilha_exemplo(planilha_t* p) {
-    inicializar_planilha(p);
-    p->total_celulas = 4;
- 
-    celula_t* c01 = nova_celula(0, 1, 12);
-    celula_t* c10 = nova_celula(1, 1, 10);
-    celula_t* c13 = nova_celula(1, 3, 7);
-    celula_t* c20 = nova_celula(2, 0, 5);
- 
-    // Listas de LINHA (ordenadas por coluna crescente, ligadas por proxima_linha)
-    c01->proxima_linha = NULL;          // linha 0: so c01
-    c10->proxima_linha = c13;           // linha 1: c10 (col1) -> c13 (col3)
-    c13->proxima_linha = NULL;
-    c20->proxima_linha = NULL;          // linha 2: so c20
- 
-    // Listas de COLUNA (ordenadas por linha crescente, ligadas por proxima_coluna)
-    c20->proxima_coluna = NULL;         // coluna 0: so c20
-    c01->proxima_coluna = c10;          // coluna 1: c01 (lin0) -> c10 (lin1)
-    c10->proxima_coluna = NULL;
-    c13->proxima_coluna = NULL;         // coluna 3: so c13
- 
-    // Fileiras de LINHA
-    fileira_t* f_lin0 = nova_fileira(0, c01);
-    fileira_t* f_lin1 = nova_fileira(1, c10);
-    fileira_t* f_lin2 = nova_fileira(2, c20);
-    f_lin0->proximo = f_lin1;
-    f_lin1->proximo = f_lin2;
-    f_lin2->proximo = NULL;
-    p->primeira_linha = f_lin0;
- 
-    // Fileiras de COLUNA
-    fileira_t* f_col0 = nova_fileira(0, c20);
-    fileira_t* f_col1 = nova_fileira(1, c01);
-    fileira_t* f_col3 = nova_fileira(3, c13);
-    f_col0->proximo = f_col1;
-    f_col1->proximo = f_col3;
-    f_col3->proximo = NULL;
-    p->primeira_coluna = f_col0;
-}
- 
-/* ----------------------------------------------------------------------
-   Testes
- ---------------------------------------------------------------------- */
- 
-int testes_ok = 0;
-int testes_total = 0;
- 
-void checar(const char* nome, int esperado, int obtido) {
-    testes_total++;
-    if (esperado == obtido) {
-        testes_ok++;
-        printf("[OK]     %s (esperado=%d, obtido=%d)\n", nome, esperado, obtido);
-    } else {
-        printf("[FALHOU] %s (esperado=%d, obtido=%d)\n", nome, esperado, obtido);
-    }
-}
- 
-void checar_ptr(const char* nome, void* esperado, void* obtido) {
-    testes_total++;
-    if (esperado == obtido) {
-        testes_ok++;
-        printf("[OK]     %s (ponteiros batem)\n", nome);
-    } else {
-        printf("[FALHOU] %s (esperado=%p, obtido=%p)\n", nome, esperado, obtido);
-    }
-}
- 
-int main() {
-    planilha_t p;
-    montar_planilha_exemplo(&p);
- 
-    printf("=== Testando obter_valor ===\n");
-    checar("obter_valor(0,1) deve ser 12", 12, obter_valor(&p, 0, 1));
-    checar("obter_valor(1,1) deve ser 10", 10, obter_valor(&p, 1, 1));
-    checar("obter_valor(1,3) deve ser 7",  7, obter_valor(&p, 1, 3));
-    checar("obter_valor(2,0) deve ser 5",  5, obter_valor(&p, 2, 0));
-    checar("obter_valor(9,9) [nao existe] deve ser 0", 0, obter_valor(&p, 9, 9));
-    checar("obter_valor(1,2) [buraco no meio] deve ser 0", 0, obter_valor(&p, 1, 2));
-    checar("obter_valor(0,0) [linha existe, celula nao] deve ser 0", 0, obter_valor(&p, 0, 0));
- 
-    printf("\n=== Testando contar_nao_nulas ===\n");
-    checar("contar_nao_nulas deve ser 4", 4, contar_nao_nulas(&p));
- 
-    printf("\n=== Testando buscar_celula (existente) ===\n");
-    {
-        celula_t *cel_ant_lin, *cel_ant_col;
-        fileira_t *fil_ant_lin, *fil_ant_col;
-        celula_t* r = buscar_celula(&p, 1, 3, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
-        checar("buscar_celula(1,3) deve retornar nao-NULL", 1, (r != NULL));
-        if (r) {
-            checar("celula (1,3) tem valor 7", 7, r->valor);
-        }
-        checar("cel_ant_linha(1,3) deve ter valor 10", 10, (cel_ant_lin ? cel_ant_lin->valor : -1));
-        checar("fil_ant_linha(1,3) deve ter indice 0", 0, (fil_ant_lin ? fil_ant_lin->indice : -1));
-        checar("fil_ant_coluna(1,3) deve ter indice 1", 1, (fil_ant_col ? fil_ant_col->indice : -1));
-        checar_ptr("cel_ant_coluna(1,3) deve ser NULL", NULL, cel_ant_col);
-    }
- 
-    printf("\n=== Testando buscar_celula (linha existe, celula nao) ===\n");
-    {
-        celula_t *cel_ant_lin, *cel_ant_col;
-        fileira_t *fil_ant_lin, *fil_ant_col;
-        celula_t* r = buscar_celula(&p, 1, 2, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
-        checar_ptr("buscar_celula(1,2) deve retornar NULL", NULL, r);
-        checar("cel_ant_linha(1,2) deve ter valor 10 (celula col=1)", 10, (cel_ant_lin ? cel_ant_lin->valor : -1));
-    }
- 
-    printf("\n=== Testando buscar_celula (linha nao existe) ===\n");
-    {
-        celula_t *cel_ant_lin, *cel_ant_col;
-        fileira_t *fil_ant_lin, *fil_ant_col;
-        celula_t* r = buscar_celula(&p, 5, 5, &cel_ant_lin, &cel_ant_col, &fil_ant_lin, &fil_ant_col);
-        checar_ptr("buscar_celula(5,5) deve retornar NULL", NULL, r);
-        checar("fil_ant_linha(5,5) deve ter indice 2", 2, (fil_ant_lin ? fil_ant_lin->indice : -1));
-        checar("fil_ant_coluna(5,5) deve ter indice 3", 3, (fil_ant_col ? fil_ant_col->indice : -1));
-    }
- 
-    printf("\n=== Resultado final: %d/%d testes passaram ===\n", testes_ok, testes_total);
- 
-    return 0;
-}
- 
