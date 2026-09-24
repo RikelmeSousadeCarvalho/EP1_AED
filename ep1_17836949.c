@@ -9,7 +9,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-#include <limits.h> // usado pra contas de INT_MAX
 
 /* ----------------------------------------------------------------------
   Estruturas de dados (não altere nomes e ordem de campos)
@@ -551,29 +550,43 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
        as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */
 
 
-       //O que falta: ajustar a logica para usar o definir celula - ele vai empilhar todas as mudanças, ai tenho que desempilhar e empilhar uma só manualmente
-
+    /*
+    deveria fazer essa verificaoção, mas perguntei diretamente pro monitor da disciplina e ele disse que não precisa, então vou deixar comentado
+    
     if(lin > INT_MAX - tamanho || col > INT_MAX - tamanho){ // a soma dos dois ints estourou o limite(INT_MAX) 
         return false;
     }
+    */
+
+    elo_pilha_t* topoAntigo = p->historico.topo;
 
     int alteracao = 0;
     for(int l = 0; l < tamanho; l++){
-        for(int c = 0; c < tamanho; c++){
+        for(int c = l+1; c < tamanho; c++){ // para evitar que repetições adicionais sejam feitas em l < c
             if(l < c){
-                int orig = obter_valor(p, lin + l, col + c);
+                int orig = obter_valor(p, lin + l, col + c); // calculo de linha e col para obter a posição na matriz da transposição, assim como na linha abaixo
                 int transp = obter_valor(p, lin + c, col + l);
                 if(orig != transp){
                     alteracao++;
                     int temp = orig;
-                    orig = transp;
-                    transp = temp;
+                    definir_celula(p, lin + l, col + c, transp); // onde era orig virou transp
+                    definir_celula(p, lin + c, col + l, temp); // onde era transp virou orig
                 }
             }
         }
     }
     
     if(alteracao > 0){
+        // desempilhando operações feitas pelo definir_celula
+        if(topoAntigo != p->historico.topo){ // se o topo antigo mudou, pelo menos uma transposição pela definir_celula foi feita e precisamos remover todas essas
+            while(p->historico.topo != topoAntigo){
+                elo_pilha_t* tpfree = p->historico.topo; // pega o topo atual
+                p->historico.topo = p->historico.topo->proximo; // passa pro proximo
+                free(tpfree); // limpa o topo atual tpfree
+            }
+        }
+
+        // criando nova operação manualmente
         operacao_t novaOp;
         novaOp.transposicao = true;
         novaOp.linha = lin;
