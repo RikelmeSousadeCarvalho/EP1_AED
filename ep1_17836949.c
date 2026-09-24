@@ -607,7 +607,42 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
 bool desfazer(planilha_t* p) {
     /* TODO: desempilhe de p->historico e restaure o valor anterior.
        Retorna false se o historico estiver vazio, true caso contrario. */
-    return false;
+
+
+    //dois casos: operacao == true || operacao == false
+
+    if(p->historico.topo == NULL){
+        return false;
+    }
+
+    elo_pilha_t* topoAntigo; // o que o topo deveria ser se nada for empilhado
+
+    if(p->historico.topo->op.transposicao == false){ // definicao ou remocao -> uso o definir
+
+        int linAnt = p->historico.topo->op.linha, colAnt = p->historico.topo->op.coluna, valAnt = p->historico.topo->op.valor_anterior;
+        elo_pilha_t* tpfree = p->historico.topo; // pega o topo atual
+        p->historico.topo = p->historico.topo->proximo; // passa pro proximo
+        free(tpfree); // limpa o topo atual tpfree
+        topoAntigo = p->historico.topo;
+        definir_celula(p, linAnt, colAnt, valAnt); // o definir vai gerar uma nova operação e colocar no topo. Como o desfazer nao deve gerar essa operação, apagamos o novo topo (operação que nao deveria aparecer)
+
+    }else{ // transposição
+
+        int linAnt = p->historico.topo->op.linha, colAnt = p->historico.topo->op.coluna, tamanho = p->historico.topo->op.tamanho;
+        elo_pilha_t* tpfree = p->historico.topo; // pega o topo atual
+        p->historico.topo = p->historico.topo->proximo; // passa pro proximo
+        free(tpfree); // limpa o topo atual tpfree
+        topoAntigo = p->historico.topo;
+        transpor(p, linAnt, colAnt, tamanho); // o transpor vai gerar uma nova operação e colocar no topo. Como o desfazer nao deve gerar essa operação, apagamos o novo topo (operação que nao deveria aparecer)
+    }
+
+    if(topoAntigo != p->historico.topo){
+        elo_pilha_t* newTopo = p->historico.topo; // pega o topo atual
+        p->historico.topo = p->historico.topo->proximo; // passa pro proximo
+        free(newTopo); // limpa o topo atual tpfree
+    }
+
+    return true;
 }
 
 
