@@ -69,19 +69,16 @@ int igual(char* a, char* b) {
     Funções obrigatórias (não altere as assinaturas)
  ---------------------------------------------------------------------- */
 
- // acho que ta certo
 void inicializar_planilha(planilha_t *p) {
     // TODO: inicialize primeiraLinha, primeiraColuna, total_celulas e historico.topo
 
-
-    //fazendo bem por cima, acho que devo VALIDAR algo antes
     p->primeira_linha = NULL;
     p->primeira_coluna = NULL;
     p->total_celulas = 0;
     p->historico.topo = NULL;
 }
 
-// acho que ta certo
+
 celula_t* buscar_celula(planilha_t *p, int lin, int col,
                       celula_t** cel_ant_linha, celula_t** cel_ant_coluna,
                       fileira_t** fil_ant_linha, fileira_t** fil_ant_coluna) {
@@ -163,7 +160,7 @@ celula_t* buscar_celula(planilha_t *p, int lin, int col,
     }
 }
 
-// acho que ta certo
+
 int obter_valor(planilha_t *p, int linha, int coluna) {
     // TODO: use buscarCelula; retorne 0 se a celula nao existir
 
@@ -175,7 +172,7 @@ int obter_valor(planilha_t *p, int linha, int coluna) {
     }
 }
 
-//acho que ta pronto
+
 int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini, int coluna_fim) {
     // TODO: some os valores das celulas nao nulas no intervalo dado
 
@@ -199,13 +196,13 @@ int somar_intervalo(planilha_t* p, int linha_ini, int linha_fim, int coluna_ini,
 }
 
 
-// acho que ta pronto
+
 int contar_nao_nulas(planilha_t* p) {
     // TODO: retorne a quantidade de celulas nao nulas
     return p->total_celulas;
 }
 
-//acho que ta pronto
+
 bool definir_celula(planilha_t* p, int lin, int col, int valor) {
     /* TODO: implemente os 4 casos (atualizar/criar/remover/nulo),
        empilhando em p->historico quando houver alteracao efetiva.
@@ -545,7 +542,6 @@ bool definir_celula(planilha_t* p, int lin, int col, int valor) {
 
 }
 
-//acho que ta certo
 bool remover_celula(planilha_t* p, int lin, int col) {
     // TODO: remova a celula (lin,col)
 
@@ -556,7 +552,7 @@ bool remover_celula(planilha_t* p, int lin, int col) {
     return false;
 }
 
-// acho que ta pronto
+
 bool transpor(planilha_t* p, int lin, int col, int tamanho) {
     /* TODO: transpoe uma matriz quadrada que está localizada entre
        as linhas [lin, lin + tamanho) e colunas [col, col + tamanho). */
@@ -617,7 +613,6 @@ bool transpor(planilha_t* p, int lin, int col, int tamanho) {
 }
 
 
-//acho que ta pronto
 bool desfazer(planilha_t* p) {
     /* TODO: desempilhe de p->historico e restaure o valor anterior.
        Retorna false se o historico estiver vazio, true caso contrario. */
@@ -660,7 +655,6 @@ bool desfazer(planilha_t* p) {
 }
 
 
-//acho que ta pronto
 void exibir_planilha(planilha_t *p) {
     /* TODO: imprima "linha coluna valor" por linha, em ordem crescente
        de linha e, dentro de cada linha, de coluna. Se vazia, imprima
@@ -684,7 +678,8 @@ void exibir_planilha(planilha_t *p) {
         }
 }
 
-//acho que ta pronto
+
+
 void exibir_historico(planilha_t* p) {
     /* TODO: imprima "linha coluna valor_anterior" por linha, do topo
        para a base. Se vazio, imprima "HISTORICO VAZIO" */
