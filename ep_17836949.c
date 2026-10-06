@@ -621,6 +621,7 @@ bool desfazer(planilha_t* p) {
     //dois casos: operacao == true || operacao == false
 
     if(p->historico.topo == NULL){
+        printf("HISTORICO VAZIO\n");
         return false;
     }
 
@@ -665,6 +666,7 @@ void exibir_planilha(planilha_t *p) {
         if(naoNulas == 0){
             printf("PLANILHA VAZIA\n");
         }else{
+            printf("PLANILHA\n");
             fileira_t* linAtual = p->primeira_linha;
 
             while(linAtual != NULL){
@@ -687,6 +689,8 @@ void exibir_historico(planilha_t* p) {
        elo_pilha_t* topo = p->historico.topo;
        if(topo == NULL){
         printf("HISTORICO VAZIO\n");
+       }else{
+        printf("HISTORICO\n");
        }
 
        while(topo != NULL){
@@ -788,24 +792,11 @@ int main(int argc, char *argv[]) {
         } else if (igual(cmd, "CONT")) {
             fprintf(saida, "CONT %d\n", contar_nao_nulas(&p));
         } else if (igual(cmd, "DESFAZER")) {
-            if (!desfazer(&p)) {
-                fprintf(saida, "HISTORICO VAZIO\n");
-            }
+            desfazer(&p);
         } else if (igual(cmd, "EXIBIR")) {
-            if (contar_nao_nulas(&p)) {
-                printf("PLANILHA\n");
-                exibir_planilha(&p);
-            } else {
-                printf("PLANILHA VAZIA\n");
-            }
+            exibir_planilha(&p);
         } else if (igual(cmd, "HIST")) {
-            if (p.historico.topo) {
-                printf("HISTORICO\n");
-                exibir_historico(&p);
-            }
-            else {
-                printf("HISTORICO VAZIO\n");
-            }
+            exibir_historico(&p);
         } else if (igual(cmd, "TRANS")) {
             int lin, col, tam;
             fscanf(entrada, "%d %d %d", &lin, &col, &tam);
